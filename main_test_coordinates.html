@@ -29,7 +29,7 @@ async function getCoord(beginLocatie){
   let coorList = [];
 
   let request = new XMLHttpRequest();
-  let response = await fetch('https://api.openrouteservice.org/geocode/search?api_key=5b3ce3597851110001cf6248fecd621f1b7c47e59b7822d65a5f8f45&text=' + beginLocatie, {headers:{'Accept': 'application/json'}})
+  let response = await fetch('https://api.openrouteservice.org/geocode/search?api_key=#&text=' + beginLocatie, {headers:{'Accept': 'application/json'}})
 
 
 let result= await response.json();
@@ -47,9 +47,7 @@ Object.entries(result).forEach((entry) => {
     eersteCoordinaat = list[0][0];
     tweedeCoordinaat = list[0][1];
 
-    // console.log(eersteCoordinaat);
-    // console.log(tweedeCoordinaat);
-    // console.log(list);
+
     coorList.push(eersteCoordinaat, tweedeCoordinaat);
     return coorList;
     //return new Array(list);
@@ -60,42 +58,8 @@ Object.entries(result).forEach((entry) => {
   }
 });
 
-// request.onreadystatechange = function () {
-//   if (this.readyState === 4) {
-//     //console.log('Status:', this.status);
-//     //console.log('Headers:', this.getAllResponseHeaders());
-//     //console.log('Body:', this.responseText);
-
-//     const res = JSON.parse(this.responseText);
-
-// Object.entries(res).forEach((entry) => {
-//   const [key,value] = entry;
-//   // console.log(`${value}`);
-//   if(key === "bbox"){
-//     let cor = `${value}`;
-//     list.push(cor.split(","));
-    
-    
-
-//     eersteCoordinaat = list[0][0];
-//     tweedeCoordinaat = list[0][1];
-
-//     //console.log(eersteCoordinaat);
-//     //console.log(tweedeCoordinaat);
-//     //console.log(list);
-//     coorList.push(eersteCoordinaat, tweedeCoordinaat);
-//     return coorList;
-//     //return new Array(list);
 
 
-    
-
-//   }
-// });
-//   }
-// };
-// request.send();
-//return list;
 return coorList;
 
 }
@@ -124,7 +88,7 @@ async function coordToDistance(beginLocatieCoord, eindLocatieCoord, vervoermidde
   }
 
 
-  let response = await fetch('https://api.openrouteservice.org/v2/directions/'+ vervoer+'?api_key=5b3ce3597851110001cf6248fecd621f1b7c47e59b7822d65a5f8f45&start='+beginLocatieEen +',%20'+ beginLocatieTwee+'&end='+ eindLocatieEen+',%20' + eindLocatieTwee, {headers:{'Accept': 'application/geo+json'}});
+  let response = await fetch('https://api.openrouteservice.org/v2/directions/'+ vervoer+'?api_key=#&start='+beginLocatieEen +',%20'+ beginLocatieTwee+'&end='+ eindLocatieEen+',%20' + eindLocatieTwee, {headers:{'Accept': 'application/geo+json'}});
 
   let result= await response.json();
 
@@ -132,7 +96,6 @@ async function coordToDistance(beginLocatieCoord, eindLocatieCoord, vervoermidde
 
   Object.entries(result).forEach((entry) => {
   const [key,value] = entry;
-  // console.log(`${value}`);
   if(key === "features"){
     distance = entry[1][0].properties.summary.distance;
     duration = entry[1][0].properties.summary.duration;
@@ -154,21 +117,6 @@ if(vervoermiddel === "car"){
 console.log("Uitstoot: " + uitstoot)
 return [distance, duration, uitstoot]
 
-
-
-//dit script berekent van de afstand tussen 2 coordinaten
-// const options = {
-// 	method: 'GET',
-// 	headers: {
-// 		'X-RapidAPI-Key': 'fcb0683391mshb349b3d5b835c1fp19a657jsnfa8867a54956',
-// 		'X-RapidAPI-Host': 'trueway-directions2.p.rapidapi.com'
-// 	}
-// };
-
-// fetch('https://trueway-directions2.p.rapidapi.com/FindDrivingPath?origin='+ beginLocatieTwee +'%2C-'+ beginLocatieEen+'&destination='+eindLocatieTwee+'%2C-'+eindLocatieEen, options)
-// 	.then(response => response.json())
-// 	.then(response => console.log(response))
-// 	.catch(err => console.error(err));
 
 }
 
