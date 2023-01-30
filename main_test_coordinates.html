@@ -1,0 +1,212 @@
+<form id="form">
+  <label for="begin">begin</label><br>
+  <input type="text" id="start" name="start"><br>
+  <label for="eind">eindlocatie</label><br>
+  <input type="text" id="eind" name="eind">
+  <select id="opties" name="vervoer">
+    <option value="car">Auto</option>
+    <option value="walking">Lopend</option>
+    <option value="bicycle">Fiets</option>
+  </select>
+    <br><br>
+  <input type="submit" value="Submit">
+    <p id="log"></p>
+    <p id="afstand"></p>
+    <p id="tijd"></p>
+    <p id="uitstoot"></p>
+    
+</form> 
+
+<script>
+
+  // dit script laat informatie zien over een bepaalde plek bijv. coordinaten
+
+
+async function getCoord(beginLocatie){
+  let list = [];
+  let eersteCoordinaat;
+  let tweedeCoordinaat;
+  let coorList = [];
+
+  let request = new XMLHttpRequest();
+  let response = await fetch('https://api.openrouteservice.org/geocode/search?api_key=5b3ce3597851110001cf6248fecd621f1b7c47e59b7822d65a5f8f45&text=' + beginLocatie, {headers:{'Accept': 'application/json'}})
+
+
+let result= await response.json();
+//console.log(result)
+
+Object.entries(result).forEach((entry) => {
+  const [key,value] = entry;
+  // console.log(`${value}`);
+  if(key === "bbox"){
+    let cor = `${value}`;
+    list.push(cor.split(","));
+    
+    
+
+    eersteCoordinaat = list[0][0];
+    tweedeCoordinaat = list[0][1];
+
+    // console.log(eersteCoordinaat);
+    // console.log(tweedeCoordinaat);
+    // console.log(list);
+    coorList.push(eersteCoordinaat, tweedeCoordinaat);
+    return coorList;
+    //return new Array(list);
+
+
+    
+
+  }
+});
+
+// request.onreadystatechange = function () {
+//   if (this.readyState === 4) {
+//     //console.log('Status:', this.status);
+//     //console.log('Headers:', this.getAllResponseHeaders());
+//     //console.log('Body:', this.responseText);
+
+//     const res = JSON.parse(this.responseText);
+
+// Object.entries(res).forEach((entry) => {
+//   const [key,value] = entry;
+//   // console.log(`${value}`);
+//   if(key === "bbox"){
+//     let cor = `${value}`;
+//     list.push(cor.split(","));
+    
+    
+
+//     eersteCoordinaat = list[0][0];
+//     tweedeCoordinaat = list[0][1];
+
+//     //console.log(eersteCoordinaat);
+//     //console.log(tweedeCoordinaat);
+//     //console.log(list);
+//     coorList.push(eersteCoordinaat, tweedeCoordinaat);
+//     return coorList;
+//     //return new Array(list);
+
+
+    
+
+//   }
+// });
+//   }
+// };
+// request.send();
+//return list;
+return coorList;
+
+}
+
+
+async function coordToDistance(beginLocatieCoord, eindLocatieCoord, vervoermiddel){
+
+  console.log(vervoermiddel)
+  console.log(beginLocatieCoord)
+  console.log(eindLocatieCoord)
+  let beginLocatieEen = beginLocatieCoord[0]
+  let beginLocatieTwee = beginLocatieCoord[1]
+  let eindLocatieEen = eindLocatieCoord[0]
+  let eindLocatieTwee = eindLocatieCoord[1]
+  let distance ;
+  let vervoer;
+  let duration;
+  let uitstoot;
+
+  if(vervoermiddel === "car"){
+    vervoer = "driving-car";
+  }if(vervoermiddel === "bicycle"){
+    vervoer = "cycling-regular"
+  }if(vervoermiddel === "walking"){
+    vervoer = "foot-walking"
+  }
+
+
+  let response = await fetch('https://api.openrouteservice.org/v2/directions/'+ vervoer+'?api_key=5b3ce3597851110001cf6248fecd621f1b7c47e59b7822d65a5f8f45&start='+beginLocatieEen +',%20'+ beginLocatieTwee+'&end='+ eindLocatieEen+',%20' + eindLocatieTwee, {headers:{'Accept': 'application/geo+json'}});
+
+  let result= await response.json();
+
+  console.log(result);
+
+  Object.entries(result).forEach((entry) => {
+  const [key,value] = entry;
+  // console.log(`${value}`);
+  if(key === "features"){
+    distance = entry[1][0].properties.summary.distance;
+    duration = entry[1][0].properties.summary.duration;
+    console.log(distance);
+    console.log(duration);
+    
+
+
+    
+
+  }
+});
+if(vervoermiddel === "car"){
+  uitstoot = parseFloat(distance * 0.3).toFixed(2);
+  
+}else{
+  uitstoot = 0;
+}
+console.log("Uitstoot: " + uitstoot)
+return [distance, duration, uitstoot]
+
+
+
+//dit script berekent van de afstand tussen 2 coordinaten
+// const options = {
+// 	method: 'GET',
+// 	headers: {
+// 		'X-RapidAPI-Key': 'fcb0683391mshb349b3d5b835c1fp19a657jsnfa8867a54956',
+// 		'X-RapidAPI-Host': 'trueway-directions2.p.rapidapi.com'
+// 	}
+// };
+
+// fetch('https://trueway-directions2.p.rapidapi.com/FindDrivingPath?origin='+ beginLocatieTwee +'%2C-'+ beginLocatieEen+'&destination='+eindLocatieTwee+'%2C-'+eindLocatieEen, options)
+// 	.then(response => response.json())
+// 	.then(response => console.log(response))
+// 	.catch(err => console.error(err));
+
+}
+
+async function logSub(event){
+  
+    log.textContent= "Afstand is berekend: ";
+    event.preventDefault();
+    let beginLocatie = document.getElementById("start").value;
+    let eindLocatie = document.getElementById("eind").value;
+    let vervoermiddel = document.getElementById("opties").value;
+
+    let beginLocatieCoord = await getCoord(beginLocatie);
+    let eindLocatieCoord = await getCoord(eindLocatie);
+    //console.log(beginLocatieCoord);
+    //console.log(eindLocatieCoord);
+    let routeInfo = await coordToDistance(beginLocatieCoord, eindLocatieCoord, vervoermiddel);
+
+    console.log(routeInfo[0]);
+    let afstandRoute = routeInfo[0]/ 1000;
+    afstandRoute = parseFloat(afstandRoute).toFixed(2);
+
+    let tijdRoute = (routeInfo[1]/60).toFixed(0);
+
+
+
+    document.getElementById("afstand").innerHTML = "Kilometers: " + afstandRoute;
+    document.getElementById("tijd").innerHTML = "Reistijd: " + tijdRoute + " min";
+
+    let uitstoot = routeInfo[2];
+    document.getElementById("uitstoot").innerHTML ="Uitgestote co2: "+ parseFloat(uitstoot/1000).toFixed(2) + " kg";
+    //return afstandRoute;
+
+}
+
+const form = document.getElementById('form');
+const log = document.getElementById('log');
+form.addEventListener('submit', logSub);
+</script>
+
+
+
